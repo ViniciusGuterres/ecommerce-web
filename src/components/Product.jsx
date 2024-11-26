@@ -92,7 +92,7 @@ function Product({ name, image, price, comments, code, onClickToBuyProductFuncti
                 <img
                     className="p-8 rounded-t-lg"
                     src={image}
-                    alt='pet shop ecommerce product'
+                    alt='ecommerce product'
                 />
             </a>
 
