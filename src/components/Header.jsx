@@ -103,7 +103,7 @@ function Header() {
                         />
 
                         <span className="font-semibold self-center text-xl whitespace-nowrap dark:text-white">
-                            Pet Store
+                            Store
                         </span>
                     </a>
 
@@ -147,7 +147,7 @@ function Header() {
             </nav>
 
             <div className="bg-indigo-700 text-indigo-200 md:text-center py-2 px-4">
-                Para todos os tipos de PET
+                O ecommerce do seu jeito
             </div>
         </header>
     );
