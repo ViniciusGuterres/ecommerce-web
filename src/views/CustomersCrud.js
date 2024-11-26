@@ -24,7 +24,6 @@ function CustomersCrud() {
         city: '',
         state: '',
         zipCode: '',
-        profileImage: ''
     };
 
     const customerLoginDataDefaultFieldsObj = {
@@ -362,7 +361,7 @@ function CustomersCrud() {
             </div>
 
             {/* Forms content */}
-            <div style={{ height: '500px' }}>
+            <div style={{ height: '300px' }}>
                 {buildCurrentTabForm()}
             </div>
 
@@ -371,7 +370,6 @@ function CustomersCrud() {
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'center',
-                marginTop: '50px'
             }}>
                 <Button
                     onClickFunction={handleClickSaveCustomer}
@@ -472,13 +470,6 @@ function PersonalDataForm({ name, lastName, cpf, telephone, address, city, state
                         cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
                     />
                 </div>
-
-                {/* Profile img */}
-                <UploadInput
-                    img={profileImage}
-                    dataKey='profileImage'
-                    onChangeFunction={handleChangeInput}
-                />
             </div>
         </form>
     );
