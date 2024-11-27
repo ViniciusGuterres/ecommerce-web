@@ -6,6 +6,7 @@ import Layout from '../src/components/Layout.jsx';
 // Pages
 import HomeProducts from "./views/HomeProducts";
 import ProductDetails from "./views/ProductDetails";
+import CreateProduct from "./views/ProductCrud.js";
 import Login from "./views/Login";
 import CustomersCrud from "./views/CustomersCrud.js";
 import Checkout from "./views/Checkout.js";
@@ -30,6 +31,15 @@ const PageRoutes = () => {
                         </Layout>
                     }
                     path='/productDetails/:id'
+                />
+
+                <Route
+                    element={
+                        <Layout>
+                            <CreateProduct />
+                        </Layout>
+                    }
+                    path='/CreateProduct'
                 />
 
                 <Route
