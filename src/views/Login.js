@@ -18,7 +18,7 @@ function Login() {
 
     // Functions
     /**
-    * @function views/handleClickToLogin - Will fetch the login api
+    * @function views/handleClickToLogin - It going to fetch the login api
     * @param {Object} - The click evt object
     */
     const handleClickToLogin = evt => {
@@ -40,11 +40,11 @@ function Login() {
             },
         };
 
-        fetch(`${BACKEND_SERVER_URL}/signInCustomer`, postOptions)
+        fetch(`${BACKEND_SERVER_URL}/signin`, postOptions)
             .then(async response => {
-                const { data, error } = await response.json();
+                const { data, err } = await response.json();
 
-                if (error === "controllers/signInCustomer - Email or password invalid") {
+                if (err === "Invalid email or password") {
                     setTimeout(() => {
                         setAlertModal(null);
                     }, 5000);
@@ -77,7 +77,7 @@ function Login() {
                     return;
                 }
             })
-            .catch(err => console.log('Error::: ', err.message));
+            .catch(err => console.log('err::: ', err.message));
     }
 
     return (
