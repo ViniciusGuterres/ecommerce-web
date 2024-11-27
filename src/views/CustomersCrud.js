@@ -40,20 +40,6 @@ function CustomersCrud() {
                     'Content-Type': 'application/json',
                 },
             };
-
-            // fetch(`${BACKEND_SERVER_URL}/getCustomers/${+customerId}`, getOptions)
-            //     .then(async response => {
-            //         const { data, error } = await response.json();
-
-            //         setCustomerEditFields(data);
-
-            //         if (error) {
-            //             alert('Um erro inesperado ocorreu! ');
-            //             window.location.href = '/';
-            //             return;
-            //         }
-            //     })
-            //     .catch(err => console.log('Error::: ', err.message));
         }
     }, []);
 
