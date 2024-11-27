@@ -202,10 +202,15 @@ function CustomersCrud() {
 
         fetch(`${BACKEND_SERVER_URL}/${customerController}`, postOptions)
             .then(async (response) => {
-                const { data, error } = await response?.json();
+                const { data, err } = await response?.json();
 
-                if (error) {
-                    console.log('error: ', error);
+                if (err || !data) {
+                    console.log('err: ', err);
+
+                    if (err && err === 'email already in use') {
+                        alert('O email já está em uso !');
+                        return;
+                    } 
 
                     alert('Um erro inesperado ocorreu !');
                     return;
