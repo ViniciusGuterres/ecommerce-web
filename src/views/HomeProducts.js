@@ -27,7 +27,7 @@ function HomeProducts() {
         };
 
         // Getting the products list
-        fetch(`${BACKEND_SERVER_URL}/getProducts`, getOptions)
+        fetch(`${BACKEND_SERVER_URL}/products`, getOptions)
             .then(response => handleGettingProductsList(response))
             .catch(err => console.log('Error::: ', err.message));
     }, []);
