@@ -12,11 +12,13 @@ function ProductDetails() {
     const [product, setProduct] = useState({});
     const [quantity, setQuantity] = useState(1);
 
+    // Globals
+    const localStorageCustomerToken = localStorage.getItem("customerToken");
+
     // Vars
-    const { id } = useParams();
+    const { id: urlID } = useParams();
     let priceFormattedToDecimals = product?.price?.toFixed(2)?.toString() || '';
     let priceFormatted = product?.price ? priceFormattedToDecimals?.replace('.', ',') : '';
-    let categoryName = product.category_obj?.[0]?.name || '';
 
     useEffect(() => {
         // Calling saving customer controller
@@ -25,11 +27,12 @@ function ProductDetails() {
             // body: jsonData,
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorageCustomerToken}`,
             },
         };
 
         // Getting the products list
-        fetch(`${BACKEND_SERVER_URL}/getProducts/${+id}`, getOptions)
+        fetch(`${BACKEND_SERVER_URL}/products`, getOptions)
             .then(response => handleGettingProduct(response))
             .catch(err => console.log('Error::: ', err.message));
     }, []);
@@ -39,16 +42,20 @@ function ProductDetails() {
      * @param {Object} response - The fetch get api response
      */
     const handleGettingProduct = async response => {
-        const { data, error } = await response.json();
+        const { data, err } = await response.json();
 
-        // Should show msg error
-        if (error) {
-            console.log('Error:: ', error);
+        // Should show msg err
+        if (err) {
+            console.log('err:: ', err);
         }
 
         // Setting data states and vars
-        if (data?.length) {
-            setProduct(data[0]);
+        const { data: products } = data;
+        
+        if (products?.length) {            
+            const productFiltered = products.filter(({ id }) => id == urlID);
+
+            setProduct(productFiltered[0]);
         }
     }
 
@@ -65,7 +72,7 @@ function ProductDetails() {
                 localStorageCustomerCartParse = JSON.parse(localStorageCustomerCart);
 
             } catch (err) {
-                console.log('error: ', err);
+                console.log('err: ', err);
             }
         }
 
@@ -101,48 +108,11 @@ function ProductDetails() {
     }
 
     /**
-     *  @function views/ProductDetails/calcProductAverageRating - Will calc the product average based on product's comments array
-     * @returns {number} - The product average rating
-     */
-    const calcProductAverageRating = () => {
-        let averageRating = 0;
-        let ratingSum = 0;
-
-        const productComments = product?.comments || [];
-
-        for (let i = 0; i < productComments.length; i++) {
-            const commentRow = productComments[i];
-
-            ratingSum = ratingSum + commentRow.rating;
-        }
-
-        averageRating = ratingSum / productComments.length;
-
-        return averageRating
-    }
-
-    /**
      *  @function views/ProductDetails/buildRatingElement - Will build the rating element stars, based on average rating
      * @returns {Element} - Will return the rating element
      */
     const buildRatingElement = () => {
-        const productAverageRating = calcProductAverageRating();
-        const productAverageRatingFormatted = productAverageRating.toFixed(2);
-
-        let starsAmount = 0;
-
-        // Setting the amount of product stars based on product average rating
-        if (productAverageRating >= 0 && productAverageRating <= 3) {
-            starsAmount = 1;
-        } else if (productAverageRating >= 3.1 && productAverageRating <= 5) {
-            starsAmount = 2;
-        } else if (productAverageRating >= 5.1 && productAverageRating <= 7) {
-            starsAmount = 3;
-        } else if (productAverageRating >= 7.1 && productAverageRating <= 8) {
-            starsAmount = 4;
-        } else {
-            starsAmount = 5;
-        }
+        let starsAmount = Math.round(Math.random() * (5 - 1) + 1);
 
         const buildStarsElement = [];
 
@@ -163,74 +133,9 @@ function ProductDetails() {
         return (
             <div className="flex items-center mt-2.5 mb-5">
                 {buildStarsElement}
-
-                <span
-                    className="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ml-3"
-                >
-                    {productAverageRatingFormatted?.toString()?.replace('.', ',')}
-                </span>
             </div>
         );
     };
-
-    /**
-     *  @function views/ProductDetails/buildCommentsSectionElement - Will build the product's comments section
-     * @returns {Element} - Will return the comments section element
-     */
-    const buildCommentsSectionElement = () => {
-        const reviewsElement = product?.comments?.map(({ rating, text }) => {
-            return (
-                <div
-                    key={`Product_details_comment_${rating}_${text}`}
-                    style={{
-                        width: '200px',
-                        boxShadow: '10px 10px 5px -8px rgba(0,0,0,0.38)',
-                        padding: '15px',
-                        borderRadius: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <div className="mt-4">
-                        <h1 className="text-lg text-gray-700 font-semibold hover:underline cursor-pointer">Product Review</h1>
-                        <div className="flex mt-2">
-                            <svg className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <svg className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <svg className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <svg className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                        </div>
-
-                        {/* Comment text */}
-                        <p>
-                            {text}
-                        </p>
-                    </div>
-                </div>
-            );
-        });
-
-        return (
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginTop: '30px'
-                }}
-            >
-                {reviewsElement}
-            </div>
-        );
-    }
 
     return (
         <div className="antialiased">
@@ -261,10 +166,6 @@ function ProductDetails() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                             </svg>
                         </span>
-
-                        <span>
-                            {categoryName}
-                        </span>
                     </div>
                 </div>
 
@@ -274,7 +175,7 @@ function ProductDetails() {
                         {/* Img */}
                         <div>
                             <img
-                                src={product?.image}
+                                src={'../images/product.jpg'}
                                 alt={product.name}
                             />
                         </div>
@@ -284,10 +185,6 @@ function ProductDetails() {
                             <h2 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
                                 {product?.name}
                             </h2>
-
-                            <p className="text-gray-500 text-sm">
-                                Categoria: <strong>{categoryName}</strong>
-                            </p>
 
                             <div className="flex items-center space-x-4 my-4">
                                 <div>
@@ -344,8 +241,6 @@ function ProductDetails() {
                         </div>
                     </div>
                 </div>
-
-                {buildCommentsSectionElement()}
             </div>
         </div>
     );
