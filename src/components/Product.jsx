@@ -1,60 +1,22 @@
 /**
  * @function Product - The product container with some information and "buy" button
  * @param {string} name - The product name
- * @param {string} image - The product Base64 image
  * @param {number} price - The product price
  * @param {number} rating - The product rating based on clients experiences
- * @param {number} code - The product DB identifier code
+ * @param {number} id - The product DB identifier id
  * @param {function} onClickToBuyProductFunction - The function to handle when click to buy button
  */
-function Product({ name, image, price, comments, code, onClickToBuyProductFunction }) {
+function Product({ name, price, id, onClickToBuyProductFunction }) {
     // Vars
     const priceFormattedToDecimals = price.toFixed(2)?.toString() || '';
     const priceFormatted = price ? `R$: ${priceFormattedToDecimals?.replace('.', ',')}` : '';
-
-    /**
-     *  @function components/Product/calcProductAverageRating - Will calc the product average based on product's comments array
-     * @returns {number} - The product average rating
-     */
-    const calcProductAverageRating = () => {
-        let averageRating = 0;
-        let ratingSum = 0;
-
-        const productComments = comments || [];
-
-        for (let i = 0; i < productComments.length; i++) {
-            const commentRow = productComments[i];
-
-            ratingSum = ratingSum + commentRow.rating;
-        }
-
-        averageRating = ratingSum / productComments.length;
-
-        return averageRating
-    }
 
     /**
     * @function components/Product/buildRatingElement - Will build the rating element stars, based on average rating
     * @returns {Element} - Will return the rating element
     */
     const buildRatingElement = () => {
-        const productAverageRating = calcProductAverageRating();
-        const productAverageRatingFormatted = productAverageRating.toFixed(2);
-
-        let starsAmount = 0;
-
-        // Setting the amount of product stars based on product average rating
-        if (productAverageRating >= 0 && productAverageRating <= 3) {
-            starsAmount = 1;
-        } else if (productAverageRating >= 3.1 && productAverageRating <= 5) {
-            starsAmount = 2;
-        } else if (productAverageRating >= 5.1 && productAverageRating <= 7) {
-            starsAmount = 3;
-        } else if (productAverageRating >= 7.1 && productAverageRating <= 8) {
-            starsAmount = 4;
-        } else {
-            starsAmount = 5;
-        }
+        let starsAmount = Math.round(Math.random() * (5 - 1) + 1);
 
         const buildStarsElement = [];
 
@@ -75,23 +37,17 @@ function Product({ name, image, price, comments, code, onClickToBuyProductFuncti
         return (
             <div className="flex items-center mt-2.5 mb-5">
                 {buildStarsElement}
-
-                <span
-                    className="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ml-3"
-                >
-                    {productAverageRatingFormatted?.toString()?.replace('.', ',')}
-                </span>
             </div>
         );
     };
 
     return (
         <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-            <a href={`/productDetails/${code}`}>
+            <a href={`/productDetails/${id}`}>
                 {/* Product img */}
                 <img
                     className="p-8 rounded-t-lg"
-                    src={image}
+                    src={'../images/logo.png'}
                     alt='ecommerce product'
                 />
             </a>
@@ -106,11 +62,7 @@ function Product({ name, image, price, comments, code, onClickToBuyProductFuncti
 
                 {/* Rating */}
                 {
-                    comments?.length
-                        ?
-                        buildRatingElement()
-                        :
-                        null
+                    buildRatingElement()
                 }
 
                 <div className="flex items-center justify-between">
@@ -121,7 +73,7 @@ function Product({ name, image, price, comments, code, onClickToBuyProductFuncti
 
                     {/* Add to cart button */}
                     <a
-                        href={`/productDetails/${code}`}
+                        href={`/productDetails/${id}`}
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >
                         Comprar

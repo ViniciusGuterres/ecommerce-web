@@ -2,15 +2,14 @@
 import Product from "./Product";
 
 /**
- * @function ProductsCategoryList - Will render products list separated by category
- * @param {string} categoryName - The category name
- * @param {object[]} products - The array with all category's products objects 
+ * @function ProductsList - Will render products list
+ * @param {object[]} products - The array with all products objects 
  * @param {string} sortProductsValue - The sort products logic value ('lowestPrice', 'biggestPrice') 
  */
-function ProductsCategoryList({ categoryName, products, sortProductsValue }) {
+function ProductsList({  products, sortProductsValue }) {
     // Functions
     /**
-     * @function components/ProductsCategoryList/sortProducts - Will sort the products by lowestPrice or biggestPrice
+     * @function components/ProductsList/sortProducts - Will sort the products by lowestPrice or biggestPrice
      * @returns {object[]} - The sorted products
      */
     const sortProducts = () => {
@@ -44,22 +43,22 @@ function ProductsCategoryList({ categoryName, products, sortProductsValue }) {
     }
 
     /**
-     * @function components/ProductsCategoryList/buildProducts
+     * @function components/ProductsList/buildProducts
      * @summary - Will build the product list calling Product component for each product's object
      * @returns {element} - Returns each product component 
      */
     const buildProducts = () => {
         const productsListSorted = sortProducts();
 
-        const productsList = productsListSorted?.map(({ name, price, image, code, comments }) => {
+        const productsList = productsListSorted?.map(({ name, price, id, description, inventory_amount }) => {
             return (
                 <Product
-                    key={`product_key_${code}`}
+                    key={`product_key_${id}`}
                     name={name}
                     price={price}
-                    image={image}
-                    code={code}
-                    comments={comments}
+                    id={id}
+                    description={description}
+                    inventoryAmount={inventory_amount}
                 />
             );
         });
@@ -74,13 +73,6 @@ function ProductsCategoryList({ categoryName, products, sortProductsValue }) {
     return (
         <div className="bg-white">
             <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-                {/* Category title */}
-                <h2
-                    className="text-2xl font-bold tracking-tight text-gray-900"
-                >
-                    {categoryName}
-                </h2>
-
                 {buildProducts()}
             </div>
         </div>
@@ -88,4 +80,4 @@ function ProductsCategoryList({ categoryName, products, sortProductsValue }) {
     );
 }
 
-export default ProductsCategoryList;
+export default ProductsList;
