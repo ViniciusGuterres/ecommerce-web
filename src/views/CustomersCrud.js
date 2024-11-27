@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 // Components
 import Input from "../components/Input.jsx";
 import Button from "../components/Button.jsx";
-import UploadInput from '../components/UploadInput.jsx';
-
 import settings from "../settings.js";
 
 // Globals const
@@ -17,13 +15,6 @@ function CustomersCrud() {
 
     const customerPersonalDataDefaultFieldsObj = {
         name: '',
-        lastName: '',
-        cpf: '',
-        telephone: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
     };
 
     const customerLoginDataDefaultFieldsObj = {
@@ -83,14 +74,6 @@ function CustomersCrud() {
     const setCustomerEditFields = dataFields => {
         const {
             name,
-            lastName,
-            cpf,
-            telephone,
-            address,
-            city,
-            state,
-            zipCode,
-            profileImage,
             email,
             password,
             cardNumber,
@@ -99,17 +82,7 @@ function CustomersCrud() {
             cardExpirationDate,
         } = dataFields;
 
-        const personalDataFieldsObj = {
-            name,
-            lastName,
-            cpf,
-            telephone,
-            address,
-            city,
-            state,
-            zipCode,
-            profileImage,
-        };
+        const personalDataFieldsObj = { name, };
 
         const LoginDataDefaultFieldsObj = {
             email,
@@ -361,7 +334,7 @@ function CustomersCrud() {
             </div>
 
             {/* Forms content */}
-            <div style={{ height: '300px' }}>
+            <div style={{ height: '200px' }}>
                 {buildCurrentTabForm()}
             </div>
 
@@ -381,7 +354,7 @@ function CustomersCrud() {
     );
 }
 
-function PersonalDataForm({ name, lastName, cpf, telephone, address, city, state, zipCode, profileImage, handleChangeInput }) {
+function PersonalDataForm({ name, handleChangeInput }) {
     return (
         <form>
             <div className="max-w-2xl mx-auto">
@@ -393,80 +366,6 @@ function PersonalDataForm({ name, lastName, cpf, telephone, address, city, state
                         onChange={handleChangeInput}
                         placeholder='Nome'
                         dataKey='name'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-
-                    {/*  LastName */}
-                    <Input
-                        value={lastName}
-                        type={'text'}
-                        onChange={handleChangeInput}
-                        placeholder='Sobrenome'
-                        dataKey='lastName'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-                </div>
-
-                <div className="flex gap-2">
-                    {/* CPF */}
-                    <Input
-                        value={cpf}
-                        type={'number'}
-                        onChange={handleChangeInput}
-                        placeholder='CPF'
-                        dataKey='cpf'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-
-                    {/* Telephone */}
-                    <Input
-                        value={telephone}
-                        type={'number'}
-                        onChange={handleChangeInput}
-                        placeholder='Telefone'
-                        dataKey='telephone'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-                </div>
-
-                {/* Address */}
-                <Input
-                    value={address}
-                    type={'text'}
-                    onChange={handleChangeInput}
-                    placeholder='Endereço'
-                    dataKey='address'
-                    cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                />
-
-                <div className="flex gap-2">
-                    {/* City */}
-                    <Input
-                        value={city}
-                        type={'text'}
-                        onChange={handleChangeInput}
-                        placeholder='Cidade'
-                        dataKey='city'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-
-                    {/* State */}
-                    <Input
-                        value={state}
-                        type={'text'}
-                        onChange={handleChangeInput}
-                        placeholder='Estado'
-                        dataKey='state'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-
-                    {/* ZipCode */}
-                    <Input
-                        value={zipCode}
-                        type={'text'}
-                        onChange={handleChangeInput}
-                        placeholder='CEP'
-                        dataKey='zipCode'
                         cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
                     />
                 </div>
