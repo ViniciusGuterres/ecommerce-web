@@ -22,22 +22,14 @@ function CustomersCrud() {
         password: ''
     };
 
-    const customerCreditCardDataDefaultFieldsObj = {
-        cardNumber: '',
-        cardCVC: '',
-        cardName: '',
-        cardExpirationDate: '',
-    };
-
     // Getting customer code
     const customerId = localStorage.getItem('customer');
 
     // States
     const [customerPersonalDataObj, setCustomerPersonalDataObj] = useState(customerPersonalDataDefaultFieldsObj);
     const [customerLoginDataObj, setCustomerLoginDataObj] = useState(customerLoginDataDefaultFieldsObj);
-    const [customerCreditCardDataObj, setCustomerCreditCardDataObj] = useState(customerCreditCardDataDefaultFieldsObj);
     const [crudMode, setCrudMode] = useState(customerId != null ? 'edit' : 'create') // options: edit, view, create
-    const [currentTab, setCurrentTab] = useState('personalData') // options: personalData, loginData, creditCardData
+    const [currentTab, setCurrentTab] = useState('personalData') // options: personalData, loginData
 
     useEffect(() => {
         // Calling get customer controller if has param has customerID
@@ -49,20 +41,19 @@ function CustomersCrud() {
                 },
             };
 
-            // Getting the products list
-            fetch(`${BACKEND_SERVER_URL}/getCustomers/${+customerId}`, getOptions)
-                .then(async response => {
-                    const { data, error } = await response.json();
+            // fetch(`${BACKEND_SERVER_URL}/getCustomers/${+customerId}`, getOptions)
+            //     .then(async response => {
+            //         const { data, error } = await response.json();
 
-                    setCustomerEditFields(data);
+            //         setCustomerEditFields(data);
 
-                    if (error) {
-                        alert('Um erro inesperado ocorreu! ');
-                        window.location.href = '/';
-                        return;
-                    }
-                })
-                .catch(err => console.log('Error::: ', err.message));
+            //         if (error) {
+            //             alert('Um erro inesperado ocorreu! ');
+            //             window.location.href = '/';
+            //             return;
+            //         }
+            //     })
+            //     .catch(err => console.log('Error::: ', err.message));
         }
     }, []);
 
@@ -76,10 +67,6 @@ function CustomersCrud() {
             name,
             email,
             password,
-            cardNumber,
-            cardCVC,
-            cardName,
-            cardExpirationDate,
         } = dataFields;
 
         const personalDataFieldsObj = { name, };
@@ -89,16 +76,8 @@ function CustomersCrud() {
             password,
         };
 
-        const creditCardDataFieldsObj = {
-            cardNumber,
-            cardCVC,
-            cardName,
-            cardExpirationDate,
-        };
-
         setCustomerPersonalDataObj(personalDataFieldsObj);
         setCustomerLoginDataObj(LoginDataDefaultFieldsObj);
-        setCustomerCreditCardDataObj(creditCardDataFieldsObj);
     }
 
     /**
@@ -108,12 +87,10 @@ function CustomersCrud() {
     const checkIfAllFieldsAreFilled = () => {
         const personalDataValues = Object.values(customerPersonalDataObj);
         const loginDataValues = Object.values(customerLoginDataObj);
-        const creditCardDataValues = Object.values(customerCreditCardDataObj);
 
         const fieldsValues = [
             ...personalDataValues,
             ...loginDataValues,
-            ...creditCardDataValues
         ];
 
         return fieldsValues.every(value => value != '');
@@ -152,19 +129,7 @@ function CustomersCrud() {
     }
 
     /**
-     * @function CustomersCrud/handleChangeCustomerCreditCardDataInput - Will get the input new value and setting the new value at state current obj key
-     * @param {string} newValue - The credit card data input new value
-     * @param {string} inputKey - The change credit card data input key e.g (email, password)
-     */
-    const handleChangeCustomerCreditCardDataInput = (newValue, inputKey) => {
-        const customerCreditCardDataObjCopy = { ...customerCreditCardDataObj };
-        customerCreditCardDataObjCopy[inputKey] = newValue;
-
-        setCustomerCreditCardDataObj(customerCreditCardDataObjCopy);
-    }
-
-    /**
-     * @function CustomersCrud/buildCurrentTabForm - Will render the selected tab PersonalDataForm, LoginDataForm or CreditCardData form 
+     * @function CustomersCrud/buildCurrentTabForm - Will render the selected tab PersonalDataForm, LoginDataForm 
      * @returns {Element} - Wil return a react element
      */
     const buildCurrentTabForm = () => {
@@ -190,17 +155,6 @@ function CustomersCrud() {
                         email={customerLoginDataObj.email}
                         password={customerLoginDataObj.password}
                         handleChangeInput={handleChangeCustomerLoginDataInput}
-                    />
-                );
-            }
-            case 'creditCardData': {
-                return (
-                    <CreditCardDataForm
-                        cardName={customerCreditCardDataObj.cardName}
-                        cardCVC={customerCreditCardDataObj.cardCVC}
-                        cardExpirationDate={customerCreditCardDataObj.cardExpirationDate}
-                        cardNumber={customerCreditCardDataObj.cardNumber}
-                        handleChangeInput={handleChangeCustomerCreditCardDataInput}
                     />
                 );
             }
@@ -231,8 +185,7 @@ function CustomersCrud() {
         const body = {
             ...customerPersonalDataObj,
             ...customerLoginDataObj,
-            ...customerCreditCardDataObj
-        }
+        };
 
         const jsonData = JSON.stringify(body);
 
@@ -245,11 +198,7 @@ function CustomersCrud() {
             },
         };
 
-        let customerController = 'saveCustomer';
-
-        if (customerId != null) {
-            customerController = `updateCustomer/${customerId}`;
-        }
+        let customerController = 'signup';
 
         fetch(`${BACKEND_SERVER_URL}/${customerController}`, postOptions)
             .then(async (response) => {
@@ -264,13 +213,12 @@ function CustomersCrud() {
 
                 alert('Formulário enviado com sucesso !');
 
-                if (crudMode !== 'edit') {
-                    window.location.href = '/login';
-                } else {
-                    window.location.href = '/';
-                }
+                window.location.href = '/login';
             })
-            .catch(err => console.log('Error::: ', err.message));
+            .catch(err => {
+                alert('Um erro inesperado ocorreu !');
+                console.log('Error::: ', err.message)
+            });
     }
 
     return (
@@ -311,22 +259,6 @@ function CustomersCrud() {
                                 onClick={() => setCurrentTab('loginData')}
                             >
                                 Dados de Login
-                            </button>
-                        </li>
-
-                        <li className="mr-2" role="presentation">
-                            <button
-                                className={getTabButtonClass('creditCardData')}
-                                id="creditCardData-tab"
-                                data-tabs-target="#creditCardData"
-                                type="button"
-                                role="tab"
-                                aria-controls="creditCardData"
-                                aria-selected="false"
-                                onClick={() => setCurrentTab('creditCardData')}
-
-                            >
-                                Dados de cartão de crédito
                             </button>
                         </li>
                     </ul>
@@ -395,54 +327,6 @@ function LoginDataForm({ email, password, handleChangeInput }) {
                     dataKey='password'
                     cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
                 />
-            </div>
-        </form>
-    );
-}
-
-function CreditCardDataForm({ cardName, cardNumber, cardExpirationDate, cardCVC, handleChangeInput }) {
-    return (
-        <form>
-            <div className="max-w-2xl mx-auto">
-                <Input
-                    value={cardName}
-                    type={'text'}
-                    onChange={handleChangeInput}
-                    placeholder='Nome no Cartão'
-                    dataKey='cardName'
-                    cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                />
-
-                <Input
-                    value={cardNumber}
-                    type={'number'}
-                    onChange={handleChangeInput}
-                    placeholder='Número'
-                    dataKey='cardNumber'
-                    cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                />
-
-                <div className="flex gap-2">
-                    {/* Expiration date */}
-                    <Input
-                        value={cardExpirationDate}
-                        type={'text'}
-                        onChange={handleChangeInput}
-                        placeholder='Data da Validade'
-                        dataKey='cardExpirationDate'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-
-                    {/* CVC */}
-                    <Input
-                        value={cardCVC}
-                        type={'number'}
-                        onChange={handleChangeInput}
-                        placeholder='CVC'
-                        dataKey='cardCVC'
-                        cssClass='text-black placeholder-gray-600 w-full px-4 py-2.5 mt-2 text-base   transition duration-500 ease-in-out transform border-transparent rounded-lg bg-gray-200  focus:border-blueGray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:shadow-outline focus:ring-2 ring-offset-current ring-offset-2 ring-gray-400'
-                    />
-                </div>
             </div>
         </form>
     );
