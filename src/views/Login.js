@@ -67,8 +67,8 @@ function Login() {
                         message: "Aguarde um momento, você está sendo redirecionado"
                     });
 
-                    localStorage.setItem("customerToken", data.token);
-                    localStorage.setItem("customer", data.code);
+                    localStorage.setItem("customerToken", data.jwtToken);
+                    localStorage.setItem("customer", data.id);
 
                     setTimeout(() => {
                         window.location.href = '/';
