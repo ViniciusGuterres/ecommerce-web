@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-    useParams
-} from "react-router-dom";
+import { useParams } from "react-router-dom";
+import img from '../assets/box.png';
 
 import settings from "../settings.js";
 
@@ -21,7 +20,7 @@ function ProductDetails() {
     let priceFormatted = product?.price ? priceFormattedToDecimals?.replace('.', ',') : '';
 
     useEffect(() => {
-        // Calling saving customer controller
+        // Calling saving product controller
         const getOptions = {
             method: 'GET',
             // body: jsonData,
@@ -63,38 +62,61 @@ function ProductDetails() {
      *  @function views/ProductDetails/handleClickAddToCart - Will add the product to local storage if the customer is logged, otherwise, send him to login screen
      */
     const handleClickAddToCart = () => {
-        const localStorageCustomerToken = localStorage.getItem("customerToken");
-        const localStorageCustomerCart = localStorage.getItem("customerCart");
-        let localStorageCustomerCartParse = {};
-
-        if (localStorageCustomerCart) {
-            try {
-                localStorageCustomerCartParse = JSON.parse(localStorageCustomerCart);
-
-            } catch (err) {
-                console.log('err: ', err);
-            }
-        }
-
-        // If customer is not auth, send to login screen
-        if (!localStorageCustomerToken) {
-            window.location.href = '/login';
-            return;
-        }
-
-        // Update customer cart
-        const customerCartCopy = { ...localStorageCustomerCartParse } || {};
-
-        customerCartCopy[product.code] = {
-            code: product.code,
-            amount: quantity
+        const cartBody = {
+            product,
+            userId: urlID,
         };
 
-        localStorage.setItem("customerCart", JSON.stringify(customerCartCopy));
-        alert('Produto adicionado ao carrinho! ');
+        // Calling saving customer controller
+        const getOptions = {
+            method: 'POST',
+            // body: jsonData,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorageCustomerToken}`,
+            },
+            body: JSON.stringify(cartBody),
+        };
 
-        // go back to home  
-        window.location.href = '/';
+        // Getting the products list
+        fetch(`${BACKEND_SERVER_URL}/products`, getOptions)
+            .then(response => {
+
+                
+                // go back to home  
+                window.location.href = '/';
+            })
+            .catch(err => console.log('Error::: ', err.message));
+
+        // const localStorageCustomerToken = localStorage.getItem("customerToken");
+        // const localStorageCustomerCart = localStorage.getItem("customerCart");
+        // let localStorageCustomerCartParse = {};
+
+        // if (localStorageCustomerCart) {
+        //     try {
+        //         localStorageCustomerCartParse = JSON.parse(localStorageCustomerCart);
+
+        //     } catch (err) {
+        //         console.log('err: ', err);
+        //     }
+        // }
+
+        // // If customer is not auth, send to login screen
+        // if (!localStorageCustomerToken) {
+        //     window.location.href = '/login';
+        //     return;
+        // }
+
+        // // Update customer cart
+        // const customerCartCopy = { ...localStorageCustomerCartParse } || {};
+
+        // customerCartCopy[product.code] = {
+        //     code: product.code,
+        //     amount: quantity
+        // };
+
+        // localStorage.setItem("customerCart", JSON.stringify(customerCartCopy));
+        // alert('Produto adicionado ao carrinho! ');
     }
 
     /**
@@ -175,7 +197,7 @@ function ProductDetails() {
                         {/* Img */}
                         <div>
                             <img
-                                src={'../images/product.jpg'}
+                                src={img}
                                 alt={product.name}
                             />
                         </div>

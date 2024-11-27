@@ -1,3 +1,5 @@
+import img from '../assets/box.png';
+
 /**
  * @function Product - The product container with some information and "buy" button
  * @param {string} name - The product name
@@ -47,7 +49,7 @@ function Product({ name, price, id, onClickToBuyProductFunction }) {
                 {/* Product img */}
                 <img
                     className="p-8 rounded-t-lg"
-                    src={'../images/logo.png'}
+                    src={img}
                     alt='ecommerce product'
                 />
             </a>
