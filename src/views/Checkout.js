@@ -53,6 +53,7 @@ function Checkout() {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
+                'Authorization': `Bearer ${localStorageCustomerToken}`,
             },
             body: JSON.stringify({ USER_ID }),
         };
@@ -139,6 +140,7 @@ function Checkout() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                'Authorization': `Bearer ${localStorageCustomerToken}`,
             },
             body: JSON.stringify(orderDetails),
         };
