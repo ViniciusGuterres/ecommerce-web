@@ -24,3 +24,7 @@ Views:
 * Detalhes do produto
 
 ![alt text](image-3.png)
+
+* Checkout
+
+![alt text](image-4.png)
