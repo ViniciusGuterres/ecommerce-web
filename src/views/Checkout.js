@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import settings from "../settings.js";
+import img from "../assets/box.png";
 
-// Globals const
 const BACKEND_SERVER_URL = settings.backendEndUrl;
 const USER_ID = localStorage.getItem("customer");
-
 const localStorageCustomerToken = localStorage.getItem("customerToken");
 
 function Checkout() {
-    const [productsInformation, setProductsInformation] = useState([]);
-    const [customerInformation, setCustomerInformation] = useState({});
     const [customerCart, setCustomerCart] = useState({});
 
     useEffect(() => {
@@ -27,7 +24,7 @@ function Checkout() {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${localStorageCustomerToken}`,
+                "Authorization": `Bearer ${localStorageCustomerToken}`,
             },
         };
 
@@ -35,12 +32,13 @@ function Checkout() {
             .then(async (response) => {
                 const { data, err } = await response.json();
 
-                if (err) {
-                    alert("Erro ao buscar carrinho: " + err);
+                if (err || !data) {
+                    alert("Erro ao buscar carrinho: " + (err || "erro inesperado"));
                     return;
                 }
 
-                setProductsInformation(data.products || []);
+                console.log("get cart response data: ", data);
+                setCustomerCart(data || { items: [], price: 0 });
             })
             .catch((err) => {
                 console.error("Erro ao buscar carrinho:", err.message);
@@ -53,9 +51,9 @@ function Checkout() {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${localStorageCustomerToken}`,
+                "Authorization": `Bearer ${localStorageCustomerToken}`,
             },
-            body: JSON.stringify({ USER_ID }),
+            body: JSON.stringify({ userId: USER_ID }),
         };
 
         fetch(`${BACKEND_SERVER_URL}/cart/${productId}`, options)
@@ -67,8 +65,7 @@ function Checkout() {
                     return;
                 }
 
-                setProductsInformation(data.products || []);
-                setCustomerCart(data.cart || {});
+                setCustomerCart(data.cart || { items: [], price: 0 });
             })
             .catch((err) => {
                 console.error("Erro ao remover item:", err.message);
@@ -76,47 +73,48 @@ function Checkout() {
             });
     };
 
-    /**
-     * Calculate the total order price.
-     */
-    const calcOrderTotal = () => {
-        return productsInformation.reduce((total, product) => {
-            const quantity = customerCart[product.id]?.quantity || 0;
-            return total + product.price * quantity;
-        }, 0).toFixed(2);
+    const formatOrderTotal = () => {
+        return customerCart?.price?.toFixed(2).replace(".", ",");
     };
 
     const buildProductsCartList = () => {
-        return productsInformation.map((product) => {
-            const quantity = customerCart[product.id]?.quantity || 0;
-            const totalPrice = (product.price * quantity).toFixed(2);
+        const aggregatedItems = {};
+
+        customerCart.items?.forEach((item) => {
+            const { id } = item;
+            if (!aggregatedItems[id]) {
+                aggregatedItems[id] = { ...item, quantity: 1 };
+            } else {
+                aggregatedItems[id].quantity += 1;
+            }
+        });
+
+        return Object.values(aggregatedItems).map(({ id, name, price, quantity }) => {
+            const totalPrice = (price * quantity).toFixed(2).replace(".", ",");
 
             return (
-                <li
-                    key={product.id}
-                    className="grid grid-cols-6 gap-2 border-b-1"
-                >
+                <li key={id} className="grid grid-cols-6 gap-2 border-b-1 py-2">
                     <div className="col-span-1 self-center">
                         <img
-                            src={product.image}
-                            alt={product.name}
+                            src={img}
+                            alt={name}
                             className="rounded w-full"
                         />
                     </div>
                     <div className="flex flex-col col-span-3 pt-2">
-                        <span className="text-gray-600 text-md font-semi-bold">
-                            {product.name}
+                        <span className="text-gray-600 text-md font-semibold">
+                            {name}
                         </span>
                     </div>
                     <div className="col-span-2 pt-3 flex items-center justify-between">
                         <span className="text-gray-400">
-                            {`${quantity} x R$${product.price.toFixed(2).replace(".", ",")}`}
+                            {`${quantity} x R$${price.toFixed(2).replace(".", ",")}`}
                         </span>
                         <span className="text-pink-400 font-semibold">
-                            R${totalPrice.replace(".", ",")}
+                            R${totalPrice}
                         </span>
                         <button
-                            onClick={() => handleRemoveItem(product.id)}
+                            onClick={() => handleRemoveItem(id)}
                             className="text-red-500"
                         >
                             Remover
@@ -127,65 +125,105 @@ function Checkout() {
         });
     };
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async (paymentMethod) => {
+        if (!["credit-card", "pix"].includes(paymentMethod)) {
+            alert("Método de pagamento inválido.");
+            return;
+        }
+    
+        const paymentEndpoint = paymentMethod === "credit-card" 
+            ? "/payment/credit-card" 
+            : "/payment/pix";
+    
         const orderDetails = {
-            USER_ID,
-            products: productsInformation.map((product) => ({
-                productId: product.id,
-                quantity: customerCart[product.id]?.quantity || 0,
-            })),
+            userId: USER_ID,
+            cartId: customerCart.id,
+            totalAmount: customerCart.price,
         };
-
+    
         const options = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${localStorageCustomerToken}`,
+                "Authorization": `Bearer ${localStorageCustomerToken}`,
             },
             body: JSON.stringify(orderDetails),
         };
+    
+        try {
+            // Process Payment
+            const paymentResponse = await fetch(`${BACKEND_SERVER_URL}${paymentEndpoint}`, options);
+            const paymentResult = await paymentResponse.json();
+    
+            if (!paymentResponse.ok || paymentResult.error) {
+                throw new Error(paymentResult.error || "Erro ao processar o pagamento.");
+            }
+    
+            alert(`Pagamento realizado com sucesso`);
+    
+            // Finalize Order 
+            const finalizeOptions = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorageCustomerToken}`,
+                },
+                body: JSON.stringify({ userId: USER_ID, cartId: customerCart.id }),
+            };
+    
+            const finalizeResponse = await fetch(`${BACKEND_SERVER_URL}/orders`, finalizeOptions);
+            const finalizeResult = await finalizeResponse.json();
+    
+            if (!finalizeResponse.ok || finalizeResult.error) {
+                throw new Error(finalizeResult.error || "Erro ao finalizar pedido.");
+            }
+    
+            // Reset Cart
+            alert("Pedido finalizado com sucesso!");
+            setCustomerCart({ items: [], price: 0 });
 
-        fetch(`${BACKEND_SERVER_URL}/orders`, options)
-            .then(async (response) => {
-                const { data, err } = await response.json();
-
-                if (err) {
-                    alert("Erro ao finalizar pedido: " + err);
-                    return;
-                }
-
-                alert("Pedido finalizado com sucesso!");
-                localStorage.removeItem("customerCart");
-                window.location.href = "/";
-            })
-            .catch((err) => {
-                console.error("Erro ao finalizar pedido:", err.message);
-                alert("Erro inesperado ao finalizar pedido.");
-            });
+            // Go to home
+    
+        } catch (err) {
+            console.error("Erro ao finalizar pedido:", err.message);
+            alert(err.message);
+        }
     };
-
+    
     return (
         <div className="h-screen grid grid-cols-3">
             <div className="lg:col-span-2 col-span-3 bg-indigo-50 space-y-8 px-12">
                 <div className="mt-8 p-4 bg-white shadow rounded-md">
                     <h2 className="text-lg font-semibold text-gray-700">Checkout</h2>
                 </div>
-                <div>
-                    <h2 className="uppercase text-lg font-semibold">Informações do cliente</h2>
-                    <div>
-                        <p>Nome: {customerInformation.name}</p>
-                        <p>Email: {customerInformation.email}</p>
-                    </div>
-                </div>
+
                 <div>
                     <h2 className="uppercase text-lg font-semibold">Resumo do pedido</h2>
-                    {buildProductsCartList()}
+                    <ul>{buildProductsCartList()}</ul>
                     <div>
-                        <strong>Total: R${calcOrderTotal().replace(".", ",")}</strong>
+                        <strong>Total: R${formatOrderTotal()}</strong>
                     </div>
                 </div>
-                <button onClick={handlePlaceOrder} className="bg-pink-400 text-white px-4 py-2 rounded">
+
+                <button 
+                    onClick={handlePlaceOrder} 
+                    className="bg-pink-400 text-white px-4 py-2 rounded"
+                >
                     Finalizar Pedido
+                </button>
+
+                <button 
+                    onClick={() => handlePlaceOrder("credit-card")}
+                    className="bg-pink-400 text-white px-4 py-2 rounded"
+                >
+                    Pagar com Cartão
+                </button>
+
+                <button 
+                    onClick={() => handlePlaceOrder("pix")}
+                    className="bg-pink-400 text-white px-4 py-2 rounded"
+                >
+                    Pagar com Pix
                 </button>
             </div>
         </div>
