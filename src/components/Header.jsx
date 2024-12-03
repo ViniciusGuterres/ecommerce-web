@@ -17,8 +17,8 @@ function Header() {
             const localStorageCustomerCart = localStorage.getItem("customerCart");
 
             if (localStorageCustomerCart) {
-                const localStorageCustomerCartParsed = JSON.parse(localStorageCustomerCart);
-                setCartProductsAmount(Object.keys(localStorageCustomerCartParsed).length);
+                const localStorageCustomerCartParsed = JSON.parse(localStorageCustomerCart);                
+                setCartProductsAmount(localStorageCustomerCartParsed?.items);
             }
 
             setIsCustomerLogged(true);

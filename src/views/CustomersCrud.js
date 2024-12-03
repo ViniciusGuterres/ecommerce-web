@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 // Components
 import Input from "../components/Input.jsx";
@@ -30,18 +30,6 @@ function CustomersCrud() {
     const [customerLoginDataObj, setCustomerLoginDataObj] = useState(customerLoginDataDefaultFieldsObj);
     const [crudMode, setCrudMode] = useState(customerId != null ? 'edit' : 'create') // options: edit, view, create
     const [currentTab, setCurrentTab] = useState('personalData') // options: personalData, loginData
-
-    useEffect(() => {
-        // Calling get customer controller if has param has customerID
-        if (customerId != null) {
-            const getOptions = {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            };
-        }
-    }, []);
 
     // Functions
     /**

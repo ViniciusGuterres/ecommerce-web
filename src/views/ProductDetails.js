@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import img from '../assets/box.png';
+import img from "../assets/box.png";
 
 import settings from "../settings.js";
 
@@ -13,50 +13,54 @@ function ProductDetails() {
 
     // Globals
     const localStorageCustomerToken = localStorage.getItem("customerToken");
+    const localStorageCustomerID = localStorage.getItem("customer");
+    const localStorageCustomerCart = localStorage.getItem("customerCart");
 
     // Vars
     const { id: urlID } = useParams();
-    let priceFormattedToDecimals = product?.price?.toFixed(2)?.toString() || '';
-    let priceFormatted = product?.price ? priceFormattedToDecimals?.replace('.', ',') : '';
+    let priceFormattedToDecimals = product?.price?.toFixed(2)?.toString() || "";
+    let priceFormatted = product?.price
+        ? priceFormattedToDecimals?.replace(".", ",")
+        : "";
 
     useEffect(() => {
         // Calling saving product controller
         const getOptions = {
-            method: 'GET',
+            method: "GET",
             // body: jsonData,
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorageCustomerToken}`,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorageCustomerToken}`,
             },
         };
 
         // Getting the products list
         fetch(`${BACKEND_SERVER_URL}/products`, getOptions)
-            .then(response => handleGettingProduct(response))
-            .catch(err => console.log('Error::: ', err.message));
+            .then((response) => handleGettingProduct(response))
+            .catch((err) => console.log("Error::: ", err.message));
     }, []);
 
     /**
      *  @function views/ProductDetails/handleGettingProduct - Will receive the get response and set into state
      * @param {Object} response - The fetch get api response
      */
-    const handleGettingProduct = async response => {
+    const handleGettingProduct = async (response) => {
         const { data, err } = await response.json();
 
         // Should show msg err
         if (err) {
-            console.log('err:: ', err);
+            console.log("err:: ", err);
         }
 
         // Setting data states and vars
         const { data: products } = data;
-        
-        if (products?.length) {            
+
+        if (products?.length) {
             const productFiltered = products.filter(({ id }) => id == urlID);
 
             setProduct(productFiltered[0]);
         }
-    }
+    };
 
     /**
      *  @function views/ProductDetails/handleClickAddToCart - Will add the product to local storage if the customer is logged, otherwise, send him to login screen
@@ -64,70 +68,75 @@ function ProductDetails() {
     const handleClickAddToCart = () => {
         const cartBody = {
             product,
-            userId: urlID,
+            userId: localStorageCustomerID,
         };
 
         // Calling saving customer controller
         const getOptions = {
-            method: 'POST',
+            method: "POST",
             // body: jsonData,
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorageCustomerToken}`,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorageCustomerToken}`,
             },
             body: JSON.stringify(cartBody),
         };
 
-        // Getting the products list
-        fetch(`${BACKEND_SERVER_URL}/products`, getOptions)
-            .then(response => {
+        fetch(`${BACKEND_SERVER_URL}/shoppingCarts`, getOptions)
+            .then(async (response) => {
+                console.log("🚀 ~ handleClickAddToCart ~ response:", response);
 
-                
-                // go back to home  
-                window.location.href = '/';
+                const { data, err } = await response.json();
+
+                // Should show msg err
+                if (err) {
+                    console.log("Error:: ", err);
+                    return;
+                }
+
+                const { items } = data;
+
+                let localStorageCustomerCartParse = {};
+
+                if (items?.length) {
+                    try {
+                        localStorageCustomerCartParse = JSON.parse({ items: items.length });
+                    } catch (err) {
+                        console.log("err: ", err);
+                    }
+                }
+
+                // If customer is not auth, send to login screen
+                if (!localStorageCustomerToken) {
+                    window.location.href = "/login";
+                    return;
+                }
+
+                // Update customer cart
+                const customerCartCopy = { ...localStorageCustomerCartParse } || {};
+
+                const cart = { items: items.length++ };
+
+                localStorage.setItem("customerCart", JSON.stringify(cart));
+
+                // Setting data states and vars
+                alert("Produto adicionado ao carrinho! ");
+
+                // go back to home
+                window.location.href = "/";
             })
-            .catch(err => console.log('Error::: ', err.message));
-
-        // const localStorageCustomerToken = localStorage.getItem("customerToken");
-        // const localStorageCustomerCart = localStorage.getItem("customerCart");
-        // let localStorageCustomerCartParse = {};
-
-        // if (localStorageCustomerCart) {
-        //     try {
-        //         localStorageCustomerCartParse = JSON.parse(localStorageCustomerCart);
-
-        //     } catch (err) {
-        //         console.log('err: ', err);
-        //     }
-        // }
-
-        // // If customer is not auth, send to login screen
-        // if (!localStorageCustomerToken) {
-        //     window.location.href = '/login';
-        //     return;
-        // }
-
-        // // Update customer cart
-        // const customerCartCopy = { ...localStorageCustomerCartParse } || {};
-
-        // customerCartCopy[product.code] = {
-        //     code: product.code,
-        //     amount: quantity
-        // };
-
-        // localStorage.setItem("customerCart", JSON.stringify(customerCartCopy));
-        // alert('Produto adicionado ao carrinho! ');
-    }
+            .catch((err) => console.log("Error::: ", err.message));
+    };
 
     /**
      *  @function views/ProductDetails/handleOnChangeProductAmount - Will set the new quantity products amount
      * @param {Object} evt - The on change event object
      */
-    const handleOnChangeProductAmount = evt => {
+    const handleOnChangeProductAmount = (evt) => {
         const value = evt.target.value;
 
         setQuantity(value);
-    }
+    };
 
     /**
      *  @function views/ProductDetails/buildRatingElement - Will build the rating element stars, based on average rating
@@ -153,9 +162,7 @@ function ProductDetails() {
         }
 
         return (
-            <div className="flex items-center mt-2.5 mb-5">
-                {buildStarsElement}
-            </div>
+            <div className="flex items-center mt-2.5 mb-5">{buildStarsElement}</div>
         );
     };
 
@@ -164,28 +171,47 @@ function ProductDetails() {
             <div className="py-6">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                        <a
-                            href="/"
-                            className="hover:underline hover:text-gray-600"
-                        >Home
+                        <a href="/" className="hover:underline hover:text-gray-600">
+                            Home
                         </a>
 
                         {/* Chevron */}
                         <span>
-                            <svg className="h-5 w-5 leading-none text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                            <svg
+                                className="h-5 w-5 leading-none text-gray-300"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9 5l7 7-7 7"
+                                />
                             </svg>
                         </span>
 
-                        <span
-                            className="hover:underline hover:text-gray-600">
+                        <span className="hover:underline hover:text-gray-600">
                             Produtos
                         </span>
 
                         {/* Chevron */}
                         <span>
-                            <svg className="h-5 w-5 leading-none text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                            <svg
+                                className="h-5 w-5 leading-none text-gray-300"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9 5l7 7-7 7"
+                                />
                             </svg>
                         </span>
                     </div>
@@ -196,10 +222,7 @@ function ProductDetails() {
                     <div className="flex flex-col md:flex-row -mx-4">
                         {/* Img */}
                         <div>
-                            <img
-                                src={img}
-                                alt={product.name}
-                            />
+                            <img src={img} alt={product.name} />
                         </div>
 
                         <div className="md:flex-1 px-4">
@@ -211,9 +234,7 @@ function ProductDetails() {
                             <div className="flex items-center space-x-4 my-4">
                                 <div>
                                     <div className="rounded-lg bg-gray-100 flex py-2 px-3">
-                                        <span className="text-indigo-400 mr-1 mt-1" >
-                                            R$
-                                        </span>
+                                        <span className="text-indigo-400 mr-1 mt-1">R$</span>
 
                                         <span className="font-bold text-indigo-600 text-3xl">
                                             {priceFormatted}
@@ -222,15 +243,15 @@ function ProductDetails() {
                                 </div>
                             </div>
 
-                            <p className="text-gray-500">
-                                {product?.description}
-                            </p>
+                            <p className="text-gray-500">{product?.description}</p>
 
                             {buildRatingElement()}
 
                             <div className="flex py-4 space-x-4">
                                 <div className="relative">
-                                    <div className="text-center left-0 pt-2 right-0 absolute block text-xs uppercase text-gray-400 tracking-wide font-semibold">QTD.</div>
+                                    <div className="text-center left-0 pt-2 right-0 absolute block text-xs uppercase text-gray-400 tracking-wide font-semibold">
+                                        QTD.
+                                    </div>
                                     <select
                                         className="cursor-pointer appearance-none rounded-xl border border-gray-200 pl-4 pr-8 h-14 flex items-end pb-1"
                                         onChange={handleOnChangeProductAmount}
@@ -247,8 +268,19 @@ function ProductDetails() {
                                         <option>10</option>
                                     </select>
 
-                                    <svg className="w-5 h-5 text-gray-400 absolute right-0 bottom-0 mb-2 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                                    <svg
+                                        className="w-5 h-5 text-gray-400 absolute right-0 bottom-0 mb-2 mr-2"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                                        />
                                     </svg>
                                 </div>
 
