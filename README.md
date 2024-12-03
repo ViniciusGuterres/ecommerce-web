@@ -9,4 +9,18 @@ Levantar a aplicação:
 
 Views:
 
+* Cadastro de usuário:
+
+![alt text](image-1.png)
+
+* Login
+
+![alt text](image-2.png)
+
+* Home 
+
 ![alt text](image.png)
+
+* Detalhes do produto
+
+![alt text](image-3.png)
