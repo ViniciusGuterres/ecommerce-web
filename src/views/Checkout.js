@@ -130,17 +130,17 @@ function Checkout() {
             alert("Método de pagamento inválido.");
             return;
         }
-    
-        const paymentEndpoint = paymentMethod === "credit-card" 
-            ? "/payment/credit-card" 
+
+        const paymentEndpoint = paymentMethod === "credit-card"
+            ? "/payment/credit-card"
             : "/payment/pix";
-    
+
         const orderDetails = {
             userId: USER_ID,
             cartId: customerCart.id,
             totalAmount: customerCart.price,
         };
-    
+
         const options = {
             method: "POST",
             headers: {
@@ -149,47 +149,29 @@ function Checkout() {
             },
             body: JSON.stringify(orderDetails),
         };
-    
+
         try {
             // Process Payment
             const paymentResponse = await fetch(`${BACKEND_SERVER_URL}${paymentEndpoint}`, options);
             const paymentResult = await paymentResponse.json();
-    
+
             if (!paymentResponse.ok || paymentResult.error) {
                 throw new Error(paymentResult.error || "Erro ao processar o pagamento.");
             }
-    
-            alert(`Pagamento realizado com sucesso`);
-    
-            // Finalize Order 
-            const finalizeOptions = {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorageCustomerToken}`,
-                },
-                body: JSON.stringify({ userId: USER_ID, cartId: customerCart.id }),
-            };
-    
-            const finalizeResponse = await fetch(`${BACKEND_SERVER_URL}/orders`, finalizeOptions);
-            const finalizeResult = await finalizeResponse.json();
-    
-            if (!finalizeResponse.ok || finalizeResult.error) {
-                throw new Error(finalizeResult.error || "Erro ao finalizar pedido.");
-            }
-    
-            // Reset Cart
-            alert("Pedido finalizado com sucesso!");
-            setCustomerCart({ items: [], price: 0 });
 
-            // Go to home
-    
+            alert(`Pagamento realizado com sucesso`);
+
+            localStorage.removeItem("customerCart");
+
+            // go back to home
+            window.location.href = "/";
+
         } catch (err) {
             console.error("Erro ao finalizar pedido:", err.message);
             alert(err.message);
         }
     };
-    
+
     return (
         <div className="h-screen grid grid-cols-3">
             <div className="lg:col-span-2 col-span-3 bg-indigo-50 space-y-8 px-12">
@@ -205,26 +187,25 @@ function Checkout() {
                     </div>
                 </div>
 
-                <button 
-                    onClick={handlePlaceOrder} 
-                    className="bg-pink-400 text-white px-4 py-2 rounded"
-                >
-                    Finalizar Pedido
-                </button>
+                <div style={{
+                    display: 'flex',
+                    width: '100%',
+                    gap: '10px'
+                }}>
+                    <button
+                        onClick={() => handlePlaceOrder("credit-card")}
+                        className="bg-pink-400 text-white px-4 py-2 rounded"
+                    >
+                        Pagar com Cartão
+                    </button>
 
-                <button 
-                    onClick={() => handlePlaceOrder("credit-card")}
-                    className="bg-pink-400 text-white px-4 py-2 rounded"
-                >
-                    Pagar com Cartão
-                </button>
-
-                <button 
-                    onClick={() => handlePlaceOrder("pix")}
-                    className="bg-pink-400 text-white px-4 py-2 rounded"
-                >
-                    Pagar com Pix
-                </button>
+                    <button
+                        onClick={() => handlePlaceOrder("pix")}
+                        className="bg-pink-400 text-white px-4 py-2 rounded"
+                    >
+                        Pagar com Pix
+                    </button>
+                </div>
             </div>
         </div>
     );
